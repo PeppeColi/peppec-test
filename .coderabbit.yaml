@@ -1,0 +1,9 @@
+language: en-US
+reviews:
+  profile: chill
+  auto_review:
+    enabled: false
+    drafts: false
+  auto_approvals:
+    enabled: true
+  allow_author_approval: false
