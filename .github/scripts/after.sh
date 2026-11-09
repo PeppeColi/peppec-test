@@ -34,7 +34,7 @@ Reply to this message to unblock it."
 fi
 
 pushed=false
-git add -A -- . ':!.agent' ':!_ctl'
+git add -A -- . ':(exclude).agent' ':(exclude)_ctl'
 if ! git diff --cached --quiet; then
   case "$ACTION" in
     start) MSG="feat: $TITLE (#$ISSUE)";;
