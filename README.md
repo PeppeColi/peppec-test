@@ -87,3 +87,15 @@ assert_eq!(count_even(&[1, 2, 3, 4]), 2);
 assert_eq!(count_even(&[-2, 0, i32::MIN, i32::MAX]), 3);
 assert_eq!(count_even(&[]), 0);
 ```
+
+### `count_odd`
+
+Returns how many values of a slice are odd, as `usize` (negative odd numbers count; empty slice gives `0`).
+
+```rust
+use peppec_test::count_odd;
+
+assert_eq!(count_odd(&[1, 2, 3, 4]), 2);
+assert_eq!(count_odd(&[-1, 0, i32::MIN, i32::MAX]), 2);
+assert_eq!(count_odd(&[]), 0);
+```
