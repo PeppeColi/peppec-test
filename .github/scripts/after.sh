@@ -34,7 +34,23 @@ Reply to this message to unblock it."
 fi
 
 pushed=false
-git add -A -- . ':(exclude).agent' ':(exclude)_ctl'
+git add -A -- . ':(exclude).agent' ':(exclude)_ctl' ':(exclude)_preset'
+
+# Protected paths (git pathspecs, one per line): changes to them are never committed
+prot=()
+while IFS= read -r p; do
+  if [ -n "$p" ]; then prot+=("$p"); fi
+done <<< "${PROTECTED_PATHS:-}"
+if [ "${#prot[@]}" -gt 0 ]; then
+  touched=$(git diff --cached --name-only -- "${prot[@]}")
+  if [ -n "$touched" ]; then
+    add_label "$ISSUE" "needs human"
+    notify "The agent changed protected files on #$ISSUE, nothing was committed:
+$touched
+$RUN_URL"
+    exit 0
+  fi
+fi
 if ! git diff --cached --quiet; then
   case "$ACTION" in
     start) MSG="feat: $TITLE (#$ISSUE)";;
