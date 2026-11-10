@@ -105,9 +105,41 @@ pub fn range(values: &[i32]) -> Option<i64> {
     Some(i64::from(max) - i64::from(min))
 }
 
+/// Returns how many values of `values` are even.
+///
+/// Zero and negative even numbers count as even. An empty slice yields `0`.
+pub fn count_even(values: &[i32]) -> usize {
+    values.iter().filter(|&&v| v % 2 == 0).count()
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn count_even_of_empty_is_zero() {
+        assert_eq!(count_even(&[]), 0);
+    }
+
+    #[test]
+    fn count_even_of_mixed_values() {
+        assert_eq!(count_even(&[1, 2, 3, 4, 5, 6]), 3);
+        assert_eq!(count_even(&[1, 3, 5]), 0);
+        assert_eq!(count_even(&[2, 4]), 2);
+    }
+
+    #[test]
+    fn count_even_counts_zero_and_negatives() {
+        assert_eq!(count_even(&[0]), 1);
+        assert_eq!(count_even(&[-2, -3, -4, 0]), 3);
+    }
+
+    #[test]
+    fn count_even_at_extremes() {
+        assert_eq!(count_even(&[i32::MIN, i32::MAX]), 1);
+        assert_eq!(count_even(&[i32::MIN]), 1);
+        assert_eq!(count_even(&[i32::MAX]), 0);
+    }
 
     #[test]
     fn range_of_empty_is_none() {

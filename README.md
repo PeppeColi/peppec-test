@@ -75,3 +75,15 @@ assert_eq!(range(&[3, -1, 9, 4]), Some(10));
 assert_eq!(range(&[i32::MIN, i32::MAX]), Some(u32::MAX as i64));
 assert_eq!(range(&[]), None);
 ```
+
+### `count_even`
+
+Returns how many values of a slice are even, as `usize` (zero and negative even numbers count; empty slice gives `0`).
+
+```rust
+use peppec_test::count_even;
+
+assert_eq!(count_even(&[1, 2, 3, 4]), 2);
+assert_eq!(count_even(&[-2, 0, i32::MIN, i32::MAX]), 3);
+assert_eq!(count_even(&[]), 0);
+```
