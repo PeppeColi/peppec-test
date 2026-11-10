@@ -20,7 +20,8 @@ case "$ACTION" in
     add_label "$PR" "ready to merge"
     notify "PR #$PR for issue #$ISSUE is ready to merge: https://github.com/$REPO/pull/$PR";;
   rerequest)
-    gh pr comment "$PR" -R "$REPO" --body "@coderabbitai review
+    # Posted with your token: CodeRabbit ignores commands written by bots, the app included
+    GH_TOKEN="$AGENT_TOKEN" gh pr comment "$PR" -R "$REPO" --body "@coderabbitai review
 
 <!-- peppec:rerequest=$SHA -->";;
 esac

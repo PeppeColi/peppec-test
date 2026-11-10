@@ -99,6 +99,7 @@ jobs:
           ISSUE: ${{ needs.decide.outputs.issue }}
           PR: ${{ needs.decide.outputs.pr }}
           SHA: ${{ needs.decide.outputs.sha }}
+          AGENT_TOKEN: ${{ secrets.AGENT_TOKEN }}
           REASON: ${{ needs.decide.outputs.reason }}
 
   agent:
