@@ -63,3 +63,15 @@ use peppec_test::min_max;
 assert_eq!(min_max(&[3, -1, 9, 4]), Some((-1, 9)));
 assert_eq!(min_max(&[]), None);
 ```
+
+### `range`
+
+Returns the difference between the largest and smallest value of a slice as `Option<i64>` (widened so it cannot overflow), or `None` if it is empty.
+
+```rust
+use peppec_test::range;
+
+assert_eq!(range(&[3, -1, 9, 4]), Some(10));
+assert_eq!(range(&[i32::MIN, i32::MAX]), Some(u32::MAX as i64));
+assert_eq!(range(&[]), None);
+```

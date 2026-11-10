@@ -97,9 +97,48 @@ pub fn min_max(values: &[i32]) -> Option<(i32, i32)> {
     )
 }
 
+/// Returns the difference between the largest and the smallest value of
+/// `values`, widened to `i64` so it cannot overflow, or `None` if the slice
+/// is empty.
+pub fn range(values: &[i32]) -> Option<i64> {
+    let (min, max) = min_max(values)?;
+    Some(i64::from(max) - i64::from(min))
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn range_of_empty_is_none() {
+        assert_eq!(range(&[]), None);
+    }
+
+    #[test]
+    fn range_of_one_element_is_zero() {
+        assert_eq!(range(&[7]), Some(0));
+    }
+
+    #[test]
+    fn range_of_many_values() {
+        assert_eq!(range(&[3, -1, 9, 4]), Some(10));
+        assert_eq!(range(&[5, 5, 5]), Some(0));
+    }
+
+    #[test]
+    fn range_of_negative_values() {
+        assert_eq!(range(&[-10, -3, -7]), Some(7));
+    }
+
+    #[test]
+    fn range_at_extremes_does_not_overflow() {
+        assert_eq!(
+            range(&[i32::MIN, i32::MAX]),
+            Some(i64::from(i32::MAX) - i64::from(i32::MIN))
+        );
+        assert_eq!(range(&[i32::MAX]), Some(0));
+        assert_eq!(range(&[i32::MIN]), Some(0));
+    }
 
     #[test]
     fn min_max_of_empty_is_none() {
