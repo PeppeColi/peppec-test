@@ -1,25 +1,21 @@
+# GitHub cron runs in UTC: list the UTC hours that can match SUMMARY_HOUR in your time zone
+# with and without daylight saving (07:00 and 08:00 UTC for 09:00 in Central Europe).
+# The script sends the summary only on the run that matches.
 name: summary
 on:
   schedule:
     - cron: '0 7,8 * * *'
   workflow_dispatch:
+
+permissions:
+  contents: read
+
 jobs:
   summary:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-        with: { ref: main, path: _ctl, sparse-checkout: .github/scripts }
-      - id: app
-        uses: actions/create-github-app-token@v2
-        with:
-          app-id: ${{ vars.APP_ID }}
-          private-key: ${{ secrets.APP_PRIVATE_KEY }}
-      - run: bash _ctl/.github/scripts/summary.sh
-        env:
-          GH_TOKEN: ${{ steps.app.outputs.token }}
-          REPO: ${{ github.repository }}
-          TZ_NAME: ${{ vars.TZ_NAME }}
-          SUMMARY_HOUR: ${{ vars.SUMMARY_HOUR }}
-          CLAUDE_TOKEN_EXPIRES: ${{ vars.CLAUDE_TOKEN_EXPIRES }}
-          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
-          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+    uses: PeppeColi/peppec/.github/workflows/summary.yml@main
+    with:
+      engine_ref: main
+    secrets:
+      APP_PRIVATE_KEY: ${{ secrets.APP_PRIVATE_KEY }}
+      TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+      TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}

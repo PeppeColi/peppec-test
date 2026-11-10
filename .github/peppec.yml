@@ -1,6 +1,13 @@
 # PEPPEC configuration for this repository. Always read from main.
 preset: rust-v1
 
-# Optional overrides of the preset defaults (see presets/<name>/preset.yml):
-# description, check, notes, allowed_tools, disallowed_tools replace the preset's value;
+# Optional overrides of the preset defaults (see presets/<name>/preset.yml in the engine).
+# description, check, notes, allowed_tools and disallowed_tools replace the preset's value;
 # protected_paths is added to the preset's list.
+#
+# description: Rust command line tool
+# check: |
+#   cargo fmt --all -- --check
+#   cargo test --all-features
+# protected_paths:
+#   - Makefile
