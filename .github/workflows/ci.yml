@@ -1,25 +1,15 @@
+# The check run it produces is named "ci / ci": require that name in the branch ruleset.
 name: ci
 on:
   pull_request:
   push:
     branches: [main]
+
+permissions:
+  contents: read
+
 jobs:
   ci:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      # Configuration and preset: agent branches are checked with the ones of the base branch,
-      # so the agent cannot weaken its own checks; any other branch uses its own
-      - uses: actions/checkout@v4
-        with:
-          ref: ${{ startsWith(github.head_ref, 'agent/') && github.base_ref || github.sha }}
-          path: _ctl
-          sparse-checkout: |
-            .github
-            presets
-      - id: cfg
-        run: bash _ctl/.github/scripts/config.sh
-      - uses: ./_preset
-      - run: bash -euxo pipefail -c "$CHECK"
-        env:
-          CHECK: ${{ steps.cfg.outputs.check }}
+    uses: PeppeColi/peppec/.github/workflows/ci.yml@main
+    with:
+      engine_ref: main
