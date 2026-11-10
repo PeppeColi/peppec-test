@@ -85,9 +85,38 @@ pub fn median(values: &[i32]) -> Option<f64> {
     }
 }
 
+/// Returns the smallest and largest value of `values` as `(min, max)`,
+/// or `None` if the slice is empty.
+///
+/// The slice is traversed only once.
+pub fn min_max(values: &[i32]) -> Option<(i32, i32)> {
+    let (&first, rest) = values.split_first()?;
+    Some(
+        rest.iter()
+            .fold((first, first), |(min, max), &v| (min.min(v), max.max(v))),
+    )
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn min_max_of_empty_is_none() {
+        assert_eq!(min_max(&[]), None);
+    }
+
+    #[test]
+    fn min_max_of_one_element() {
+        assert_eq!(min_max(&[7]), Some((7, 7)));
+    }
+
+    #[test]
+    fn min_max_of_many_values() {
+        assert_eq!(min_max(&[3, -1, 9, 4]), Some((-1, 9)));
+        assert_eq!(min_max(&[5, 5, 5]), Some((5, 5)));
+        assert_eq!(min_max(&[i32::MAX, i32::MIN]), Some((i32::MIN, i32::MAX)));
+    }
 
     #[test]
     fn median_of_empty_is_none() {
