@@ -1,0 +1,5 @@
+runs:
+  using: composite
+  steps:
+    - shell: bash
+      run: echo "extra setup ran from $(pwd)"

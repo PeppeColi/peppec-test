@@ -10,6 +10,6 @@ permissions:
 
 jobs:
   ci:
-    uses: PeppeColi/peppec/.github/workflows/ci.yml@v1
+    uses: PeppeColi/peppec/.github/workflows/ci.yml@feat/php-v1
     with:
-      engine_ref: v1
+      engine_ref: feat/php-v1
