@@ -12,9 +12,9 @@ permissions:
 
 jobs:
   summary:
-    uses: PeppeColi/peppec/.github/workflows/summary.yml@main
+    uses: PeppeColi/peppec/.github/workflows/summary.yml@v1
     with:
-      engine_ref: main
+      engine_ref: v1
     secrets:
       APP_PRIVATE_KEY: ${{ secrets.APP_PRIVATE_KEY }}
       TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
