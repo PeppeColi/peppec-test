@@ -5,14 +5,15 @@ pub fn sum(a: i32, b: i32) -> i64 {
 
 /// Returns the integer average of `values`, truncated toward zero.
 ///
-/// The sum is computed in `i64` so it cannot overflow. An empty slice yields `0`.
+/// The sum is computed in `i128` so it cannot overflow for any slice length.
+/// An empty slice yields `0`.
 pub fn average(values: &[i32]) -> i32 {
     if values.is_empty() {
         return 0;
     }
-    let total: i64 = values.iter().map(|&v| i64::from(v)).sum();
+    let total: i128 = values.iter().map(|&v| i128::from(v)).sum();
     // The average of `i32` values always fits in `i32`.
-    (total / values.len() as i64) as i32
+    (total / values.len() as i128) as i32
 }
 
 #[cfg(test)]
@@ -39,6 +40,12 @@ mod tests {
     fn average_does_not_overflow() {
         assert_eq!(average(&[i32::MAX, i32::MAX]), i32::MAX);
         assert_eq!(average(&[i32::MIN, i32::MIN]), i32::MIN);
+    }
+
+    #[test]
+    fn average_of_many_extreme_values() {
+        let values = vec![i32::MIN; 1 << 20];
+        assert_eq!(average(&values), i32::MIN);
     }
 
     #[test]
