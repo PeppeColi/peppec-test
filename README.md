@@ -99,3 +99,15 @@ assert_eq!(count_odd(&[1, 2, 3, 4]), 2);
 assert_eq!(count_odd(&[-1, 0, i32::MIN, i32::MAX]), 2);
 assert_eq!(count_odd(&[]), 0);
 ```
+
+### `sum_of_squares`
+
+Returns the sum of the squares of a slice, as `i64` (saturating, so it never overflows; empty slice gives `0`).
+
+```rust
+use peppec_test::sum_of_squares;
+
+assert_eq!(sum_of_squares(&[1, -2, 3]), 14);
+assert_eq!(sum_of_squares(&[i32::MIN, i32::MIN]), i64::MAX);
+assert_eq!(sum_of_squares(&[]), 0);
+```

@@ -119,9 +119,51 @@ pub fn count_odd(values: &[i32]) -> usize {
     values.iter().filter(|&&v| v % 2 != 0).count()
 }
 
+/// Returns the sum of the squares of `values`, computed in `i64`.
+///
+/// Uses saturating arithmetic, so it cannot overflow. An empty slice yields `0`.
+pub fn sum_of_squares(values: &[i32]) -> i64 {
+    values.iter().fold(0i64, |acc, &v| {
+        let v = i64::from(v);
+        acc.saturating_add(v.saturating_mul(v))
+    })
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn sum_of_squares_of_empty_is_zero() {
+        assert_eq!(sum_of_squares(&[]), 0);
+    }
+
+    #[test]
+    fn sum_of_squares_of_values() {
+        assert_eq!(sum_of_squares(&[1, 2, 3]), 14);
+    }
+
+    #[test]
+    fn sum_of_squares_of_negatives() {
+        assert_eq!(sum_of_squares(&[-1, -2, -3]), 14);
+        assert_eq!(sum_of_squares(&[-4, 4]), 32);
+    }
+
+    #[test]
+    fn sum_of_squares_at_extremes() {
+        let min = i64::from(i32::MIN);
+        let max = i64::from(i32::MAX);
+        assert_eq!(sum_of_squares(&[i32::MIN]), min * min);
+        assert_eq!(sum_of_squares(&[i32::MAX]), max * max);
+        assert_eq!(sum_of_squares(&[i32::MIN, i32::MAX]), min * min + max * max);
+    }
+
+    #[test]
+    fn sum_of_squares_saturates() {
+        // Two squares of i32::MIN (2^62 each) already exceed i64::MAX.
+        assert_eq!(sum_of_squares(&[i32::MIN, i32::MIN]), i64::MAX);
+        assert_eq!(sum_of_squares(&[i32::MIN; 5]), i64::MAX);
+    }
 
     #[test]
     fn count_odd_of_empty_is_zero() {
