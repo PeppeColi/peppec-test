@@ -67,9 +67,51 @@ pub fn average_with(values: &[i32], rounding: Rounding) -> i32 {
     rounded as i32
 }
 
+/// Returns the median of `values`, or `None` if the slice is empty.
+///
+/// For an even count, the result is the mean of the two middle values.
+/// The input slice is not modified.
+pub fn median(values: &[i32]) -> Option<f64> {
+    if values.is_empty() {
+        return None;
+    }
+    let mut sorted = values.to_vec();
+    sorted.sort_unstable();
+    let mid = sorted.len() / 2;
+    if sorted.len() % 2 == 1 {
+        Some(f64::from(sorted[mid]))
+    } else {
+        Some((f64::from(sorted[mid - 1]) + f64::from(sorted[mid])) / 2.0)
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn median_of_empty_is_none() {
+        assert_eq!(median(&[]), None);
+    }
+
+    #[test]
+    fn median_of_odd_count() {
+        assert_eq!(median(&[5, 1, 3]), Some(3.0));
+        assert_eq!(median(&[7]), Some(7.0));
+    }
+
+    #[test]
+    fn median_of_even_count_is_mean_of_middle_values() {
+        assert_eq!(median(&[4, 1, 3, 2]), Some(2.5));
+        assert_eq!(median(&[i32::MAX, i32::MAX]), Some(f64::from(i32::MAX)));
+    }
+
+    #[test]
+    fn median_does_not_modify_input() {
+        let values = [3, 1, 2];
+        let _ = median(&values);
+        assert_eq!(values, [3, 1, 2]);
+    }
 
     #[test]
     fn average_of_values() {
