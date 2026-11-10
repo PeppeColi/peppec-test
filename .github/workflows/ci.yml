@@ -8,11 +8,18 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - uses: dtolnay/rust-toolchain@stable
+      # Configuration and preset: agent branches are checked with the ones of the base branch,
+      # so the agent cannot weaken its own checks; any other branch uses its own
+      - uses: actions/checkout@v4
         with:
-          components: clippy, rustfmt
-      - uses: Swatinem/rust-cache@v2
-      - run: cargo fmt --all -- --check
-      - run: cargo build --all-targets
-      - run: cargo clippy --all-targets -- -D warnings
-      - run: cargo test
+          ref: ${{ startsWith(github.head_ref, 'agent/') && github.base_ref || github.sha }}
+          path: _ctl
+          sparse-checkout: |
+            .github
+            presets
+      - id: cfg
+        run: bash _ctl/.github/scripts/config.sh
+      - uses: ./_preset
+      - run: bash -euxo pipefail -c "$CHECK"
+        env:
+          CHECK: ${{ steps.cfg.outputs.check }}
