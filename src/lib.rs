@@ -112,9 +112,41 @@ pub fn count_even(values: &[i32]) -> usize {
     values.iter().filter(|&&v| v % 2 == 0).count()
 }
 
+/// Returns how many values of `values` are odd.
+///
+/// Negative odd numbers count as odd. An empty slice yields `0`.
+pub fn count_odd(values: &[i32]) -> usize {
+    values.iter().filter(|&&v| v % 2 != 0).count()
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn count_odd_of_empty_is_zero() {
+        assert_eq!(count_odd(&[]), 0);
+    }
+
+    #[test]
+    fn count_odd_of_mixed_values() {
+        assert_eq!(count_odd(&[1, 2, 3, 4, 5, 6]), 3);
+        assert_eq!(count_odd(&[2, 4]), 0);
+        assert_eq!(count_odd(&[1, 3]), 2);
+    }
+
+    #[test]
+    fn count_odd_counts_negatives_but_not_zero() {
+        assert_eq!(count_odd(&[0]), 0);
+        assert_eq!(count_odd(&[-1, -2, -3, 0]), 2);
+    }
+
+    #[test]
+    fn count_odd_at_extremes() {
+        assert_eq!(count_odd(&[i32::MIN, i32::MAX]), 1);
+        assert_eq!(count_odd(&[i32::MIN]), 0);
+        assert_eq!(count_odd(&[i32::MAX]), 1);
+    }
 
     #[test]
     fn count_even_of_empty_is_zero() {
