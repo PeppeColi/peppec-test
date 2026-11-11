@@ -119,6 +119,13 @@ pub fn count_odd(values: &[i32]) -> usize {
     values.iter().filter(|&&v| v % 2 != 0).count()
 }
 
+/// Returns how many values of `values` are greater than zero.
+///
+/// Zero and negative values are not counted. An empty slice yields `0`.
+pub fn count_positive(values: &[i32]) -> usize {
+    values.iter().filter(|&&v| v > 0).count()
+}
+
 /// Returns the sum of the squares of `values`, computed in `i64`.
 ///
 /// Uses saturating arithmetic, so it cannot overflow. An empty slice yields `0`.
@@ -163,6 +170,31 @@ mod tests {
         // Two squares of i32::MIN (2^62 each) already exceed i64::MAX.
         assert_eq!(sum_of_squares(&[i32::MIN, i32::MIN]), i64::MAX);
         assert_eq!(sum_of_squares(&[i32::MIN; 5]), i64::MAX);
+    }
+
+    #[test]
+    fn count_positive_of_empty_is_zero() {
+        assert_eq!(count_positive(&[]), 0);
+    }
+
+    #[test]
+    fn count_positive_of_mixed_values() {
+        assert_eq!(count_positive(&[1, -2, 3, -4, 5]), 3);
+        assert_eq!(count_positive(&[2, 4]), 2);
+        assert_eq!(count_positive(&[-1, -3]), 0);
+    }
+
+    #[test]
+    fn count_positive_excludes_zero() {
+        assert_eq!(count_positive(&[0]), 0);
+        assert_eq!(count_positive(&[0, 0, 1, -1, 0]), 1);
+    }
+
+    #[test]
+    fn count_positive_at_extremes() {
+        assert_eq!(count_positive(&[i32::MIN, i32::MAX]), 1);
+        assert_eq!(count_positive(&[i32::MIN]), 0);
+        assert_eq!(count_positive(&[i32::MAX]), 1);
     }
 
     #[test]
