@@ -11,16 +11,66 @@ argument is the command, the rest are its numbers:
 usage: peppec-test <command> [numbers...]
 ```
 
-The only command so far is `median`, which prints the median of the numbers:
+The `median` command prints the median of the numbers:
 
 ```console
 $ peppec-test median 3 1 2
 2
 ```
 
-`peppec-test --help` prints the usage. An unknown command, a value that is not a 32-bit
-integer, or a missing list of numbers prints a one-line error on the error stream and exits
-with code 2.
+The `stats` command prints six statistics of the numbers, in this order: `count`, `min`,
+`max`, `range`, `average` and `median`:
+
+```console
+$ peppec-test stats 3 1 2
+count: 3
+min: 1
+max: 3
+range: 2
+average: 2
+median: 2
+```
+
+`average` is the integer average, truncated toward zero, so `stats 1 2` shows `average: 1`
+and `median: 1.5`. It is not a decimal mean.
+
+When no number is given as an argument, `stats` reads the numbers from standard input, with
+numbers separated by spaces or line breaks and empty lines ignored:
+
+```console
+$ printf '3\n1\n2\n' | peppec-test stats
+count: 3
+min: 1
+max: 3
+range: 2
+average: 2
+median: 2
+```
+
+`--only <list>` shows only the statistics named in the list, separated by commas. The
+statistics are still shown in the order above, whatever order the list gives them in:
+
+```console
+$ peppec-test stats --only median,count 3 1 2
+count: 3
+median: 2
+```
+
+The names are `count`, `min`, `max`, `range`, `average` and `median`.
+
+`--json` prints one line with a JSON object that always has the same six keys, in the order
+above. A statistic left out by `--only` is `null`:
+
+```console
+$ peppec-test stats --json 3 1 2
+{"count":3,"min":1,"max":3,"range":2,"average":2,"median":2}
+$ peppec-test stats --json --only min,median 4 1 3 2
+{"count":null,"min":1,"max":null,"range":null,"average":null,"median":2.5}
+```
+
+`peppec-test --help` prints the usage. An unknown command, an unknown option, a value that is
+not a 32-bit integer, or a missing list of numbers prints a one-line error on the error stream
+and exits with code 2.
 
 ## API
 
