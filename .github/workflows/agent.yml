@@ -29,9 +29,9 @@ permissions:
 jobs:
   agent:
     if: github.event.pull_request.head.repo.fork != true
-    uses: PeppeColi/peppec/.github/workflows/agent.yml@feat/parent-spec
+    uses: PeppeColi/peppec/.github/workflows/agent.yml@feat/feature-done
     with:
-      engine_ref: feat/parent-spec
+      engine_ref: feat/feature-done
       force: ${{ inputs.force || false }}
     secrets:
       CLAUDE_CODE_OAUTH_TOKEN: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
