@@ -306,3 +306,52 @@ fn json_unknown_statistic_is_plain_error() {
         "error: unknown statistic 'avg'; available statistics: count, min, max, range, average, median",
     );
 }
+
+const USAGE_LINE: &str = "usage: peppec-test <command> [numbers...]";
+
+/// Runs `peppec-test` itself, without the `stats` command name, and returns
+/// standard output, standard error and exit code.
+fn run_program(args: &[&str]) -> (String, String, Option<i32>) {
+    let out = Command::new(env!("CARGO_BIN_EXE_peppec-test"))
+        .args(args)
+        .output()
+        .unwrap();
+    (
+        String::from_utf8(out.stdout).unwrap(),
+        String::from_utf8(out.stderr).unwrap(),
+        out.status.code(),
+    )
+}
+
+#[test]
+fn help_lists_commands_and_options() {
+    let (out, err, code) = run_program(&["--help"]);
+    assert!(
+        out.starts_with(&format!("{USAGE_LINE}\n")),
+        "standard output: {out:?}"
+    );
+    for expected in [
+        "median", "stats", "--only", "--json", "count", "min", "max", "range", "average",
+    ] {
+        assert!(out.contains(expected), "standard output: {out:?}");
+    }
+    assert!(err.is_empty(), "standard error: {err:?}");
+    assert_eq!(code, Some(0));
+}
+
+#[test]
+fn help_mentions_standard_input() {
+    let (out, _, _) = run_program(&["--help"]);
+    assert!(out.contains("standard input"), "standard output: {out:?}");
+}
+
+#[test]
+fn no_arguments_prints_stats_usage_to_error_stream() {
+    let (out, err, code) = run_program(&[]);
+    assert!(out.is_empty(), "standard output: {out:?}");
+    assert!(err.starts_with(USAGE_LINE), "standard error: {err:?}");
+    for expected in ["stats", "--only", "--json"] {
+        assert!(err.contains(expected), "standard error: {err:?}");
+    }
+    assert_eq!(code, Some(2));
+}

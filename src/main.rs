@@ -199,8 +199,13 @@ fn usage() -> String {
          \n\
          commands:\n\
          {commands}\n\
+         stats reads the numbers from standard input when none are given as arguments.\n\
+         \n\
          options:\n\
-         \x20 --help    show this help\n"
+         \x20 --help         show this help\n\
+         \x20 --only <list>  stats: show only the listed statistics, separated by commas:\n\
+         \x20                count, min, max, range, average, median\n\
+         \x20 --json         stats: print the statistics as one JSON object\n"
     )
 }
 
