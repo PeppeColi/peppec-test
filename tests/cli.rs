@@ -14,6 +14,11 @@ fn check(args: &[&str], expected: &str) {
 }
 
 #[test]
+fn ping_prints_pong() {
+    check(&["ping"], "pong");
+}
+
+#[test]
 fn median_odd_count() {
     check(&["median", "3", "1", "2"], "2");
 }
