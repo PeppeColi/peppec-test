@@ -1,3 +1,5 @@
+pub mod range_stats;
+
 /// Returns the sum of `a` and `b`, widened to `i64` so it cannot overflow.
 pub fn sum(a: i32, b: i32) -> i64 {
     i64::from(a) + i64::from(b)
@@ -105,6 +107,16 @@ pub fn range(values: &[i32]) -> Option<i64> {
     Some(i64::from(max) - i64::from(min))
 }
 
+/// Returns the largest value of `values`, or `None` if the slice is empty.
+pub fn max_of(values: &[i64]) -> Option<i64> {
+    values.iter().copied().max()
+}
+
+/// Returns the smallest value of `values`, or `None` if the slice is empty.
+pub fn min_of(values: &[i64]) -> Option<i64> {
+    values.iter().copied().min()
+}
+
 /// Returns how many values of `values` are even.
 ///
 /// Zero and negative even numbers count as even. An empty slice yields `0`.
@@ -124,6 +136,20 @@ pub fn count_odd(values: &[i32]) -> usize {
 /// Zero and negative values are not counted. An empty slice yields `0`.
 pub fn count_positive(values: &[i32]) -> usize {
     values.iter().filter(|&&v| v > 0).count()
+}
+
+/// Returns how many values of `values` are zero.
+///
+/// An empty slice yields `0`.
+pub fn count_zero(values: &[i64]) -> usize {
+    values.iter().filter(|&&v| v == 0).count()
+}
+
+/// Returns how many values of `values` are below zero.
+///
+/// Zero and positive values are not counted. An empty slice yields `0`.
+pub fn count_negative(values: &[i64]) -> usize {
+    values.iter().filter(|&&v| v < 0).count()
 }
 
 /// Returns the sum of the squares of `values`, computed in `i64`.
@@ -198,6 +224,39 @@ mod tests {
     }
 
     #[test]
+    fn count_zero_of_empty_is_zero() {
+        assert_eq!(count_zero(&[]), 0);
+    }
+
+    #[test]
+    fn count_zero_without_zeros() {
+        assert_eq!(count_zero(&[1, -2, 3]), 0);
+        assert_eq!(count_zero(&[i64::MIN, i64::MAX]), 0);
+    }
+
+    #[test]
+    fn count_zero_of_several_zeros() {
+        assert_eq!(count_zero(&[0, 1, 0, -1, 0]), 3);
+        assert_eq!(count_zero(&[0, 0, 0]), 3);
+    }
+
+    #[test]
+    fn count_negative_of_empty_is_zero() {
+        assert_eq!(count_negative(&[]), 0);
+    }
+
+    #[test]
+    fn count_negative_without_negatives() {
+        assert_eq!(count_negative(&[0, 1, 2, i64::MAX]), 0);
+    }
+
+    #[test]
+    fn count_negative_of_several_negatives() {
+        assert_eq!(count_negative(&[-1, 2, -3, 0, -4]), 3);
+        assert_eq!(count_negative(&[i64::MIN, -1, i64::MAX]), 2);
+    }
+
+    #[test]
     fn count_odd_of_empty_is_zero() {
         assert_eq!(count_odd(&[]), 0);
     }
@@ -220,6 +279,44 @@ mod tests {
         assert_eq!(count_odd(&[i32::MIN, i32::MAX]), 1);
         assert_eq!(count_odd(&[i32::MIN]), 0);
         assert_eq!(count_odd(&[i32::MAX]), 1);
+    }
+
+    #[test]
+    fn max_of_empty_is_none() {
+        assert_eq!(max_of(&[]), None);
+    }
+
+    #[test]
+    fn max_of_one_value() {
+        assert_eq!(max_of(&[7]), Some(7));
+        assert_eq!(max_of(&[-7]), Some(-7));
+    }
+
+    #[test]
+    fn max_of_many_values() {
+        assert_eq!(max_of(&[3, -1, 9, 4]), Some(9));
+        assert_eq!(max_of(&[-5, -2, -9]), Some(-2));
+        assert_eq!(max_of(&[5, 5, 5]), Some(5));
+        assert_eq!(max_of(&[i64::MIN, i64::MAX, 0]), Some(i64::MAX));
+    }
+
+    #[test]
+    fn min_of_empty_is_none() {
+        assert_eq!(min_of(&[]), None);
+    }
+
+    #[test]
+    fn min_of_one_value() {
+        assert_eq!(min_of(&[7]), Some(7));
+        assert_eq!(min_of(&[-7]), Some(-7));
+    }
+
+    #[test]
+    fn min_of_many_values() {
+        assert_eq!(min_of(&[3, -1, 9, 4]), Some(-1));
+        assert_eq!(min_of(&[-5, -2, -9]), Some(-9));
+        assert_eq!(min_of(&[5, 5, 5]), Some(5));
+        assert_eq!(min_of(&[i64::MIN, i64::MAX, 0]), Some(i64::MIN));
     }
 
     #[test]

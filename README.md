@@ -2,6 +2,26 @@
 
 A small Rust library of integer helper functions.
 
+## Command line
+
+The `peppec-test` program exposes some of the functions on the command line. The first
+argument is the command, the rest are its numbers:
+
+```text
+usage: peppec-test <command> [numbers...]
+```
+
+The only command so far is `median`, which prints the median of the numbers:
+
+```console
+$ peppec-test median 3 1 2
+2
+```
+
+`peppec-test --help` prints the usage. An unknown command, a value that is not a 32-bit
+integer, or a missing list of numbers prints a one-line error on the error stream and exits
+with code 2.
+
 ## API
 
 All functions live in `src/lib.rs` and are used through the `peppec_test` crate.

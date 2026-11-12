@@ -1,0 +1,282 @@
+/// Returns the spread of `values`: the largest value minus the smallest one.
+///
+/// Returns `None` if the slice is empty, or if the difference does not fit
+/// in `i64`. A single value has a spread of `0`.
+pub fn rs_spread(values: &[i64]) -> Option<i64> {
+    let max = values.iter().copied().max()?;
+    let min = values.iter().copied().min()?;
+    max.checked_sub(min)
+}
+
+/// Returns the midrange of `values`: the sum of the smallest and the largest
+/// value, divided by two and truncated toward zero.
+///
+/// Returns `None` if the slice is empty. A single value is its own midrange.
+pub fn rs_midrange(values: &[i64]) -> Option<i64> {
+    let max = values.iter().copied().max()?;
+    let min = values.iter().copied().min()?;
+    // The sum is computed in `i128` so it cannot overflow. The midpoint lies
+    // between `min` and `max`, so the result always fits in `i64`.
+    let mid = (i128::from(min) + i128::from(max)) / 2;
+    Some(mid as i64)
+}
+
+/// Returns the largest gap of `values`: the largest difference between two
+/// neighbouring values once the slice is sorted.
+///
+/// Returns `None` if the slice is empty, or if any gap does not fit in `i64`
+/// (a larger gap would overflow too, so the result is `None` in that case as
+/// well). A single value has no neighbours and its largest gap is `0`.
+pub fn rs_max_gap(values: &[i64]) -> Option<i64> {
+    if values.is_empty() {
+        return None;
+    }
+    let mut sorted = values.to_vec();
+    sorted.sort_unstable();
+    let mut largest = 0;
+    for pair in sorted.windows(2) {
+        largest = largest.max(pair[1].checked_sub(pair[0])?);
+    }
+    Some(largest)
+}
+
+/// Returns the smallest gap of `values`: the smallest difference between two
+/// neighbouring values once the slice is sorted.
+///
+/// Returns `None` if the slice has fewer than two values. A gap that does not
+/// fit in `i64` is skipped, since it cannot be the smallest one; the result is
+/// `None` only if no gap fits. Repeated values have a gap of `0`.
+pub fn rs_min_gap(values: &[i64]) -> Option<i64> {
+    let mut sorted = values.to_vec();
+    sorted.sort_unstable();
+    sorted
+        .windows(2)
+        .filter_map(|pair| pair[1].checked_sub(pair[0]))
+        .min()
+}
+
+/// Returns how many values of `values` lie within the range of `bounds`, from
+/// the smallest to the largest value of `bounds`, both included.
+///
+/// Returns `None` if `bounds` is empty. An empty `values` yields `0`.
+pub fn rs_count_in_range(values: &[i64], bounds: &[i64]) -> Option<i64> {
+    let low = bounds.iter().copied().min()?;
+    let high = bounds.iter().copied().max()?;
+    let count = values.iter().filter(|&&v| low <= v && v <= high).count();
+    i64::try_from(count).ok()
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn rs_spread_of_empty_is_none() {
+        assert_eq!(rs_spread(&[]), None);
+    }
+
+    #[test]
+    fn rs_spread_of_one_value_is_zero() {
+        assert_eq!(rs_spread(&[7]), Some(0));
+        assert_eq!(rs_spread(&[-7]), Some(0));
+    }
+
+    #[test]
+    fn rs_spread_of_several_values() {
+        assert_eq!(rs_spread(&[3, -1, 9, 4]), Some(10));
+        assert_eq!(rs_spread(&[-10, -3, -7]), Some(7));
+        assert_eq!(rs_spread(&[5, 5, 5]), Some(0));
+    }
+
+    #[test]
+    fn rs_spread_at_extremes_without_overflow() {
+        assert_eq!(rs_spread(&[i64::MIN, -1]), Some(i64::MAX));
+        assert_eq!(rs_spread(&[0, i64::MAX]), Some(i64::MAX));
+    }
+
+    #[test]
+    fn rs_spread_overflowing_difference_is_none() {
+        assert_eq!(rs_spread(&[i64::MIN, i64::MAX]), None);
+        assert_eq!(rs_spread(&[i64::MIN, 0, i64::MAX]), None);
+        assert_eq!(rs_spread(&[i64::MIN, 1]), None);
+    }
+
+    #[test]
+    fn rs_midrange_of_empty_is_none() {
+        assert_eq!(rs_midrange(&[]), None);
+    }
+
+    #[test]
+    fn rs_midrange_of_one_value_is_that_value() {
+        assert_eq!(rs_midrange(&[7]), Some(7));
+        assert_eq!(rs_midrange(&[-7]), Some(-7));
+    }
+
+    #[test]
+    fn rs_midrange_of_several_values() {
+        // (-1 + 9) / 2 = 4
+        assert_eq!(rs_midrange(&[3, -1, 9, 4]), Some(4));
+        // (-10 + -3) / 2 = -6.5 -> -6
+        assert_eq!(rs_midrange(&[-10, -3, -7]), Some(-6));
+        assert_eq!(rs_midrange(&[5, 5, 5]), Some(5));
+    }
+
+    #[test]
+    fn rs_midrange_truncates_toward_zero() {
+        // 3 / 2 = 1.5 -> 1
+        assert_eq!(rs_midrange(&[1, 2]), Some(1));
+        // -3 / 2 = -1.5 -> -1
+        assert_eq!(rs_midrange(&[-1, -2]), Some(-1));
+    }
+
+    #[test]
+    fn rs_midrange_of_sum_that_overflows_i64() {
+        assert_eq!(rs_midrange(&[i64::MAX, i64::MAX]), Some(i64::MAX));
+        assert_eq!(rs_midrange(&[i64::MIN, i64::MIN]), Some(i64::MIN));
+        // MIN + MAX = -1 -> truncated to 0
+        assert_eq!(rs_midrange(&[i64::MIN, i64::MAX]), Some(0));
+        // (MAX - 1 + MAX) / 2 = MAX - 1
+        assert_eq!(rs_midrange(&[i64::MAX - 1, i64::MAX]), Some(i64::MAX - 1));
+        // MIN + -1 overflows; (MIN - 1) / 2 = -2^62 after truncation
+        assert_eq!(rs_midrange(&[i64::MIN, -1]), Some(i64::MIN / 2));
+    }
+
+    #[test]
+    fn rs_max_gap_of_empty_is_none() {
+        assert_eq!(rs_max_gap(&[]), None);
+    }
+
+    #[test]
+    fn rs_max_gap_of_one_value_is_zero() {
+        assert_eq!(rs_max_gap(&[7]), Some(0));
+        assert_eq!(rs_max_gap(&[-7]), Some(0));
+    }
+
+    #[test]
+    fn rs_max_gap_of_several_values() {
+        // Sorted: 1, 4, 10, 20 -> gaps 3, 6, 10
+        assert_eq!(rs_max_gap(&[10, 1, 4, 20]), Some(10));
+        // Sorted: -10, -7, -3 -> gaps 3, 4
+        assert_eq!(rs_max_gap(&[-3, -10, -7]), Some(4));
+        assert_eq!(rs_max_gap(&[5, 5, 5]), Some(0));
+        assert_eq!(rs_max_gap(&[1, 2, 3, 4]), Some(1));
+    }
+
+    #[test]
+    fn rs_max_gap_at_extremes_without_overflow() {
+        assert_eq!(rs_max_gap(&[-1, 0, i64::MAX]), Some(i64::MAX));
+        assert_eq!(rs_max_gap(&[i64::MAX - 1, i64::MAX]), Some(1));
+    }
+
+    #[test]
+    fn rs_max_gap_overflowing_difference_is_none() {
+        assert_eq!(rs_max_gap(&[i64::MIN, i64::MAX]), None);
+        assert_eq!(rs_max_gap(&[i64::MIN, 0, i64::MAX]), None);
+        // The gap from -1 to MAX overflows even though MIN to -1 fits.
+        assert_eq!(rs_max_gap(&[i64::MIN, -1, i64::MAX]), None);
+    }
+
+    #[test]
+    fn rs_min_gap_of_empty_is_none() {
+        assert_eq!(rs_min_gap(&[]), None);
+    }
+
+    #[test]
+    fn rs_min_gap_of_one_value_is_none() {
+        assert_eq!(rs_min_gap(&[7]), None);
+        assert_eq!(rs_min_gap(&[-7]), None);
+    }
+
+    #[test]
+    fn rs_min_gap_of_several_values() {
+        // Sorted: 1, 4, 10, 20 -> gaps 3, 6, 10
+        assert_eq!(rs_min_gap(&[10, 1, 4, 20]), Some(3));
+        // Sorted: -10, -7, -3 -> gaps 3, 4
+        assert_eq!(rs_min_gap(&[-3, -10, -7]), Some(3));
+        assert_eq!(rs_min_gap(&[1, 2]), Some(1));
+    }
+
+    #[test]
+    fn rs_min_gap_of_repeated_values_is_zero() {
+        assert_eq!(rs_min_gap(&[5, 5]), Some(0));
+        assert_eq!(rs_min_gap(&[5, 5, 5]), Some(0));
+        // Sorted: 1, 1, 4 -> gaps 0, 3
+        assert_eq!(rs_min_gap(&[4, 1, 1]), Some(0));
+    }
+
+    #[test]
+    fn rs_min_gap_at_extremes_without_overflow() {
+        assert_eq!(rs_min_gap(&[-1, 0, i64::MAX]), Some(1));
+        assert_eq!(rs_min_gap(&[i64::MAX - 1, i64::MAX]), Some(1));
+        assert_eq!(rs_min_gap(&[i64::MIN, i64::MIN + 1]), Some(1));
+    }
+
+    #[test]
+    fn rs_min_gap_overflowing_difference_is_none() {
+        // The only gap is 2^64 - 1, which does not fit in i64.
+        assert_eq!(rs_min_gap(&[i64::MIN, i64::MAX]), None);
+        assert_eq!(rs_min_gap(&[i64::MIN, 1]), None);
+    }
+
+    #[test]
+    fn rs_min_gap_skips_overflowing_gaps() {
+        // The gap MIN -> 0 overflows, but the smallest gap 0 -> MAX fits.
+        assert_eq!(rs_min_gap(&[i64::MIN, 0, i64::MAX]), Some(i64::MAX));
+        // MIN -> -1 fits (2^63 - 1); -1 -> MAX overflows and is skipped.
+        assert_eq!(rs_min_gap(&[i64::MIN, -1, i64::MAX]), Some(i64::MAX));
+    }
+
+    #[test]
+    fn rs_count_in_range_with_empty_bounds_is_none() {
+        assert_eq!(rs_count_in_range(&[1, 2, 3], &[]), None);
+        assert_eq!(rs_count_in_range(&[], &[]), None);
+    }
+
+    #[test]
+    fn rs_count_in_range_of_empty_values_is_zero() {
+        assert_eq!(rs_count_in_range(&[], &[1, 5]), Some(0));
+    }
+
+    #[test]
+    fn rs_count_in_range_counts_values_inside() {
+        // Bounds 2..=8
+        assert_eq!(rs_count_in_range(&[3, 4, 7], &[2, 8]), Some(3));
+        assert_eq!(rs_count_in_range(&[5], &[2, 8]), Some(1));
+    }
+
+    #[test]
+    fn rs_count_in_range_excludes_values_outside() {
+        assert_eq!(rs_count_in_range(&[1, 9, -4, 100], &[2, 8]), Some(0));
+        assert_eq!(rs_count_in_range(&[1, 3, 9], &[2, 8]), Some(1));
+    }
+
+    #[test]
+    fn rs_count_in_range_includes_bounds() {
+        assert_eq!(rs_count_in_range(&[2, 8], &[2, 8]), Some(2));
+        assert_eq!(rs_count_in_range(&[2, 1, 8, 9], &[8, 2]), Some(2));
+    }
+
+    #[test]
+    fn rs_count_in_range_uses_smallest_and_largest_of_bounds() {
+        // The bounds are 0 and 10, whatever their order.
+        assert_eq!(
+            rs_count_in_range(&[0, 5, 10, 11, -1], &[7, 0, 10, 3]),
+            Some(3)
+        );
+    }
+
+    #[test]
+    fn rs_count_in_range_with_single_bound_matches_only_that_value() {
+        assert_eq!(rs_count_in_range(&[4, 5, 4], &[4]), Some(2));
+        assert_eq!(rs_count_in_range(&[4, 5, 6], &[7]), Some(0));
+    }
+
+    #[test]
+    fn rs_count_in_range_at_extremes() {
+        assert_eq!(
+            rs_count_in_range(&[i64::MIN, 0, i64::MAX], &[i64::MIN, i64::MAX]),
+            Some(3)
+        );
+        assert_eq!(rs_count_in_range(&[i64::MAX], &[i64::MIN, 0]), Some(0));
+    }
+}
