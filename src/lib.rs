@@ -136,6 +136,13 @@ pub fn count_positive(values: &[i32]) -> usize {
     values.iter().filter(|&&v| v > 0).count()
 }
 
+/// Returns how many values of `values` are zero.
+///
+/// An empty slice yields `0`.
+pub fn count_zero(values: &[i64]) -> usize {
+    values.iter().filter(|&&v| v == 0).count()
+}
+
 /// Returns the sum of the squares of `values`, computed in `i64`.
 ///
 /// Uses saturating arithmetic, so it cannot overflow. An empty slice yields `0`.
@@ -205,6 +212,23 @@ mod tests {
         assert_eq!(count_positive(&[i32::MIN, i32::MAX]), 1);
         assert_eq!(count_positive(&[i32::MIN]), 0);
         assert_eq!(count_positive(&[i32::MAX]), 1);
+    }
+
+    #[test]
+    fn count_zero_of_empty_is_zero() {
+        assert_eq!(count_zero(&[]), 0);
+    }
+
+    #[test]
+    fn count_zero_without_zeros() {
+        assert_eq!(count_zero(&[1, -2, 3]), 0);
+        assert_eq!(count_zero(&[i64::MIN, i64::MAX]), 0);
+    }
+
+    #[test]
+    fn count_zero_of_several_zeros() {
+        assert_eq!(count_zero(&[0, 1, 0, -1, 0]), 3);
+        assert_eq!(count_zero(&[0, 0, 0]), 3);
     }
 
     #[test]
