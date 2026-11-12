@@ -40,6 +40,21 @@ pub fn rs_max_gap(values: &[i64]) -> Option<i64> {
     Some(largest)
 }
 
+/// Returns the smallest gap of `values`: the smallest difference between two
+/// neighbouring values once the slice is sorted.
+///
+/// Returns `None` if the slice has fewer than two values. A gap that does not
+/// fit in `i64` is skipped, since it cannot be the smallest one; the result is
+/// `None` only if no gap fits. Repeated values have a gap of `0`.
+pub fn rs_min_gap(values: &[i64]) -> Option<i64> {
+    let mut sorted = values.to_vec();
+    sorted.sort_unstable();
+    sorted
+        .windows(2)
+        .filter_map(|pair| pair[1].checked_sub(pair[0]))
+        .min()
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -148,5 +163,55 @@ mod tests {
         assert_eq!(rs_max_gap(&[i64::MIN, 0, i64::MAX]), None);
         // The gap from -1 to MAX overflows even though MIN to -1 fits.
         assert_eq!(rs_max_gap(&[i64::MIN, -1, i64::MAX]), None);
+    }
+
+    #[test]
+    fn rs_min_gap_of_empty_is_none() {
+        assert_eq!(rs_min_gap(&[]), None);
+    }
+
+    #[test]
+    fn rs_min_gap_of_one_value_is_none() {
+        assert_eq!(rs_min_gap(&[7]), None);
+        assert_eq!(rs_min_gap(&[-7]), None);
+    }
+
+    #[test]
+    fn rs_min_gap_of_several_values() {
+        // Sorted: 1, 4, 10, 20 -> gaps 3, 6, 10
+        assert_eq!(rs_min_gap(&[10, 1, 4, 20]), Some(3));
+        // Sorted: -10, -7, -3 -> gaps 3, 4
+        assert_eq!(rs_min_gap(&[-3, -10, -7]), Some(3));
+        assert_eq!(rs_min_gap(&[1, 2]), Some(1));
+    }
+
+    #[test]
+    fn rs_min_gap_of_repeated_values_is_zero() {
+        assert_eq!(rs_min_gap(&[5, 5]), Some(0));
+        assert_eq!(rs_min_gap(&[5, 5, 5]), Some(0));
+        // Sorted: 1, 1, 4 -> gaps 0, 3
+        assert_eq!(rs_min_gap(&[4, 1, 1]), Some(0));
+    }
+
+    #[test]
+    fn rs_min_gap_at_extremes_without_overflow() {
+        assert_eq!(rs_min_gap(&[-1, 0, i64::MAX]), Some(1));
+        assert_eq!(rs_min_gap(&[i64::MAX - 1, i64::MAX]), Some(1));
+        assert_eq!(rs_min_gap(&[i64::MIN, i64::MIN + 1]), Some(1));
+    }
+
+    #[test]
+    fn rs_min_gap_overflowing_difference_is_none() {
+        // The only gap is 2^64 - 1, which does not fit in i64.
+        assert_eq!(rs_min_gap(&[i64::MIN, i64::MAX]), None);
+        assert_eq!(rs_min_gap(&[i64::MIN, 1]), None);
+    }
+
+    #[test]
+    fn rs_min_gap_skips_overflowing_gaps() {
+        // The gap MIN -> 0 overflows, but the smallest gap 0 -> MAX fits.
+        assert_eq!(rs_min_gap(&[i64::MIN, 0, i64::MAX]), Some(i64::MAX));
+        // MIN -> -1 fits (2^63 - 1); -1 -> MAX overflows and is skipped.
+        assert_eq!(rs_min_gap(&[i64::MIN, -1, i64::MAX]), Some(i64::MAX));
     }
 }
