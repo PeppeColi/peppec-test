@@ -185,3 +185,5 @@ assert_eq!(sum_of_squares(&[]), 0);
 Agent pull requests are merged into `dev`; `dev` is brought to `main` with a merge commit.
 
 The `dev` branch is kept after each merge into `main` by the "keep dev" ruleset.
+
+Merged agent branches are removed by the workflow.
