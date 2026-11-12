@@ -105,14 +105,33 @@ fn parse_only(list: &str) -> Result<[bool; 6], String> {
     Ok(chosen)
 }
 
+/// Writes the statistics as one JSON object with all six keys, in canonical
+/// order. A statistic that is not chosen is written as `null`. The object is
+/// written by hand: the values are plain numbers, so nothing needs escaping.
+fn json_object(results: &[String; 6], chosen: [bool; 6]) -> String {
+    let fields: Vec<String> = STATISTICS
+        .iter()
+        .zip(results)
+        .zip(chosen)
+        .map(|((name, value), on)| {
+            let value = if on { value.as_str() } else { "null" };
+            format!("\"{name}\":{value}")
+        })
+        .collect();
+    format!("{{{}}}", fields.join(","))
+}
+
 fn run_stats(args: &[String]) -> Result<String, String> {
     // Options are recognised first, so their problems come before those of the
     // numbers and before standard input is read.
     let mut chosen: Option<[bool; 6]> = None;
+    let mut json = false;
     let mut numbers: Vec<&String> = Vec::new();
     let mut iter = args.iter();
     while let Some(arg) = iter.next() {
-        if arg == "--only" {
+        if arg == "--json" {
+            json = true;
+        } else if arg == "--only" {
             if chosen.is_some() {
                 return Err("error: --only given more than once".to_owned());
             }
@@ -149,6 +168,9 @@ fn run_stats(args: &[String]) -> Result<String, String> {
         peppec_test::average(&values).to_string(),
         median.to_string(),
     ];
+    if json {
+        return Ok(json_object(&results, chosen));
+    }
     let lines: Vec<String> = STATISTICS
         .iter()
         .zip(&results)
