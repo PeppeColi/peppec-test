@@ -105,6 +105,11 @@ pub fn range(values: &[i32]) -> Option<i64> {
     Some(i64::from(max) - i64::from(min))
 }
 
+/// Returns the largest value of `values`, or `None` if the slice is empty.
+pub fn max_of(values: &[i64]) -> Option<i64> {
+    values.iter().copied().max()
+}
+
 /// Returns how many values of `values` are even.
 ///
 /// Zero and negative even numbers count as even. An empty slice yields `0`.
@@ -220,6 +225,25 @@ mod tests {
         assert_eq!(count_odd(&[i32::MIN, i32::MAX]), 1);
         assert_eq!(count_odd(&[i32::MIN]), 0);
         assert_eq!(count_odd(&[i32::MAX]), 1);
+    }
+
+    #[test]
+    fn max_of_empty_is_none() {
+        assert_eq!(max_of(&[]), None);
+    }
+
+    #[test]
+    fn max_of_one_value() {
+        assert_eq!(max_of(&[7]), Some(7));
+        assert_eq!(max_of(&[-7]), Some(-7));
+    }
+
+    #[test]
+    fn max_of_many_values() {
+        assert_eq!(max_of(&[3, -1, 9, 4]), Some(9));
+        assert_eq!(max_of(&[-5, -2, -9]), Some(-2));
+        assert_eq!(max_of(&[5, 5, 5]), Some(5));
+        assert_eq!(max_of(&[i64::MIN, i64::MAX, 0]), Some(i64::MAX));
     }
 
     #[test]
