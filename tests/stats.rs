@@ -192,3 +192,56 @@ fn arguments_win_over_stdin() {
 fn invalid_argument_has_no_line_even_with_stdin() {
     fails_input(&["1", "abc"], b"9\n", "error: 'abc' is not a valid number");
 }
+
+#[test]
+fn only_prints_chosen_statistics_in_canonical_order() {
+    assert_eq!(
+        ok(&["--only", "median,count", "3", "1", "2"]),
+        "count: 3\nmedian: 2\n"
+    );
+    assert_eq!(ok(&["3", "1", "2", "--only", "max"]), "max: 3\n");
+    assert_eq!(ok(&["3", "--only", "range", "1", "2"]), "range: 2\n");
+    assert_eq!(ok(&["--only", "min,min", "3", "1", "2"]), "min: 1\n");
+    assert_eq!(ok(&["--only", "min", "-5", "-1"]), "min: -5\n");
+}
+
+#[test]
+fn only_reads_standard_input_when_no_number_is_given() {
+    let (out, err, code) = run_with_input(&["--only", "max"], b"3\n1\n2\n");
+    assert_eq!(out, "max: 3\n");
+    assert!(err.is_empty());
+    assert_eq!(code, Some(0));
+}
+
+#[test]
+fn option_errors() {
+    let list = "available statistics: count, min, max, range, average, median";
+    fails(
+        &["--only", "avg", "1", "2"],
+        &format!("error: unknown statistic 'avg'; {list}"),
+    );
+    fails(
+        &["--only", "1", "2"],
+        &format!("error: unknown statistic '1'; {list}"),
+    );
+    fails(
+        &["--only", "min,,max", "1"],
+        &format!("error: unknown statistic ''; {list}"),
+    );
+    fails(
+        &["1", "2", "--only"],
+        "error: --only needs a list of statistics",
+    );
+    fails(
+        &["--only", "", "1", "2"],
+        "error: --only needs a list of statistics",
+    );
+    fails(
+        &["--only", "min", "--only", "max", "1"],
+        "error: --only given more than once",
+    );
+    fails(&["--foo", "1"], "error: unknown option '--foo'");
+    fails(&["--only=min", "1"], "error: unknown option '--only=min'");
+    fails(&["--help"], "error: unknown option '--help'");
+    fails(&["--foo", "abc"], "error: unknown option '--foo'");
+}

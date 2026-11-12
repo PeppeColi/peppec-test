@@ -83,13 +83,57 @@ fn run_median(args: &[String]) -> Result<String, String> {
         .ok_or_else(|| "error: median needs at least one number".to_owned())
 }
 
+/// The statistics of `stats`, in canonical order.
+const STATISTICS: [&str; 6] = ["count", "min", "max", "range", "average", "median"];
+
+/// Parses the list given to `--only` into one flag per statistic, in
+/// canonical order. The first unknown name, left to right, is reported.
+fn parse_only(list: &str) -> Result<[bool; 6], String> {
+    if list.is_empty() {
+        return Err("error: --only needs a list of statistics".to_owned());
+    }
+    let mut chosen = [false; 6];
+    for name in list.split(',') {
+        let Some(index) = STATISTICS.iter().position(|s| *s == name) else {
+            return Err(format!(
+                "error: unknown statistic '{name}'; available statistics: {}",
+                STATISTICS.join(", ")
+            ));
+        };
+        chosen[index] = true;
+    }
+    Ok(chosen)
+}
+
 fn run_stats(args: &[String]) -> Result<String, String> {
+    // Options are recognised first, so their problems come before those of the
+    // numbers and before standard input is read.
+    let mut chosen: Option<[bool; 6]> = None;
+    let mut numbers: Vec<&String> = Vec::new();
+    let mut iter = args.iter();
+    while let Some(arg) = iter.next() {
+        if arg == "--only" {
+            if chosen.is_some() {
+                return Err("error: --only given more than once".to_owned());
+            }
+            let list = iter
+                .next()
+                .ok_or_else(|| "error: --only needs a list of statistics".to_owned())?;
+            chosen = Some(parse_only(list)?);
+        } else if arg.starts_with("--") {
+            return Err(format!("error: unknown option '{arg}'"));
+        } else {
+            numbers.push(arg);
+        }
+    }
+    let chosen = chosen.unwrap_or([true; 6]);
     // Arguments and standard input are never mixed: standard input is read
-    // only when no argument is given.
-    let values = if args.is_empty() {
+    // only when no number is given as an argument.
+    let values = if numbers.is_empty() {
         read_stdin_numbers()?
     } else {
-        args.iter()
+        numbers
+            .iter()
             .map(|a| parse_number(a))
             .collect::<Result<Vec<i32>, _>>()?
     };
@@ -97,11 +141,22 @@ fn run_stats(args: &[String]) -> Result<String, String> {
     let (min, max) = peppec_test::min_max(&values).ok_or_else(empty)?;
     let range = peppec_test::range(&values).ok_or_else(empty)?;
     let median = peppec_test::median(&values).ok_or_else(empty)?;
-    Ok(format!(
-        "count: {}\nmin: {min}\nmax: {max}\nrange: {range}\naverage: {}\nmedian: {median}",
-        values.len(),
-        peppec_test::average(&values),
-    ))
+    let results = [
+        values.len().to_string(),
+        min.to_string(),
+        max.to_string(),
+        range.to_string(),
+        peppec_test::average(&values).to_string(),
+        median.to_string(),
+    ];
+    let lines: Vec<String> = STATISTICS
+        .iter()
+        .zip(&results)
+        .zip(chosen)
+        .filter(|(_, on)| *on)
+        .map(|((name, value), _)| format!("{name}: {value}"))
+        .collect();
+    Ok(lines.join("\n"))
 }
 
 fn command_names() -> String {
