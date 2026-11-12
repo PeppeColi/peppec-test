@@ -26,7 +26,7 @@ const COMMANDS: &[Command] = &[
     },
     Command {
         name: "ping",
-        summary: "print pong",
+        summary: "print pong (PONG with --loud)",
         run: run_ping,
     },
 ];
@@ -88,9 +88,14 @@ fn run_median(args: &[String]) -> Result<String, String> {
         .ok_or_else(|| "error: median needs at least one number".to_owned())
 }
 
-/// Answers `ping` with `pong`. Any arguments are ignored.
-fn run_ping(_args: &[String]) -> Result<String, String> {
-    Ok("pong".to_owned())
+/// Answers `ping` with `pong`, or with `PONG` when `--loud` is given.
+/// Other arguments are ignored.
+fn run_ping(args: &[String]) -> Result<String, String> {
+    if args.iter().any(|arg| arg == "--loud") {
+        Ok("PONG".to_owned())
+    } else {
+        Ok("pong".to_owned())
+    }
 }
 
 /// The statistics of `stats`, in canonical order.
@@ -215,7 +220,8 @@ fn usage() -> String {
          \x20 --help         show this help\n\
          \x20 --only <list>  stats: show only the listed statistics, separated by commas:\n\
          \x20                count, min, max, range, average, median\n\
-         \x20 --json         stats: print the statistics as one JSON object\n"
+         \x20 --json         stats: print the statistics as one JSON object\n\
+         \x20 --loud         ping: print PONG instead of pong\n"
     )
 }
 

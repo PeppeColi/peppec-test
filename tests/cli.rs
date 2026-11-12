@@ -19,6 +19,11 @@ fn ping_prints_pong() {
 }
 
 #[test]
+fn ping_loud_prints_pong_in_capitals() {
+    check(&["ping", "--loud"], "PONG");
+}
+
+#[test]
 fn median_odd_count() {
     check(&["median", "3", "1", "2"], "2");
 }
