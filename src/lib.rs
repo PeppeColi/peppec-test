@@ -110,6 +110,11 @@ pub fn max_of(values: &[i64]) -> Option<i64> {
     values.iter().copied().max()
 }
 
+/// Returns the smallest value of `values`, or `None` if the slice is empty.
+pub fn min_of(values: &[i64]) -> Option<i64> {
+    values.iter().copied().min()
+}
+
 /// Returns how many values of `values` are even.
 ///
 /// Zero and negative even numbers count as even. An empty slice yields `0`.
@@ -244,6 +249,25 @@ mod tests {
         assert_eq!(max_of(&[-5, -2, -9]), Some(-2));
         assert_eq!(max_of(&[5, 5, 5]), Some(5));
         assert_eq!(max_of(&[i64::MIN, i64::MAX, 0]), Some(i64::MAX));
+    }
+
+    #[test]
+    fn min_of_empty_is_none() {
+        assert_eq!(min_of(&[]), None);
+    }
+
+    #[test]
+    fn min_of_one_value() {
+        assert_eq!(min_of(&[7]), Some(7));
+        assert_eq!(min_of(&[-7]), Some(-7));
+    }
+
+    #[test]
+    fn min_of_many_values() {
+        assert_eq!(min_of(&[3, -1, 9, 4]), Some(-1));
+        assert_eq!(min_of(&[-5, -2, -9]), Some(-9));
+        assert_eq!(min_of(&[5, 5, 5]), Some(5));
+        assert_eq!(min_of(&[i64::MIN, i64::MAX, 0]), Some(i64::MIN));
     }
 
     #[test]
