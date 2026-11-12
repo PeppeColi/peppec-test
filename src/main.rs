@@ -1,4 +1,5 @@
 use std::env;
+use std::io::{self, Read};
 use std::process::ExitCode;
 
 /// A command of the command line.
@@ -28,14 +29,47 @@ const COMMANDS: &[Command] = &[
 /// Parses one command line argument as a 32-bit signed integer.
 ///
 /// A valid number is an optional `+` or `-` followed by one or more decimal
-/// digits, and it must fit in an `i32`.
-fn parse_number(text: &str) -> Result<i32, String> {
+/// digits, and it must fit in an `i32`. The error describes the problem
+/// without the `error: ` prefix, so that callers can add where it is.
+fn parse_value(text: &str) -> Result<i32, String> {
     let digits = text.strip_prefix(['+', '-']).unwrap_or(text);
     if digits.is_empty() || !digits.bytes().all(|b| b.is_ascii_digit()) {
-        return Err(format!("error: '{text}' is not a valid number"));
+        return Err(format!("'{text}' is not a valid number"));
     }
     text.parse::<i32>()
-        .map_err(|_| format!("error: '{text}' is out of range for a 32-bit integer"))
+        .map_err(|_| format!("'{text}' is out of range for a 32-bit integer"))
+}
+
+/// Parses one command line argument as a number, with the full error message.
+fn parse_number(text: &str) -> Result<i32, String> {
+    parse_value(text).map_err(|problem| format!("error: {problem}"))
+}
+
+/// Parses the numbers of a text, separated by any whitespace.
+///
+/// Lines are counted from 1, empty lines included, and only the first invalid
+/// value in reading order is reported, with its line.
+fn parse_text(text: &str) -> Result<Vec<i32>, String> {
+    let mut values = Vec::new();
+    for (index, line) in text.split('\n').enumerate() {
+        for word in line.split_whitespace() {
+            let value = parse_value(word)
+                .map_err(|problem| format!("error: line {}: {problem}", index + 1))?;
+            values.push(value);
+        }
+    }
+    Ok(values)
+}
+
+/// Reads standard input until its end and parses the numbers in it.
+fn read_stdin_numbers() -> Result<Vec<i32>, String> {
+    let mut bytes = Vec::new();
+    io::stdin()
+        .read_to_end(&mut bytes)
+        .map_err(|e| format!("error: cannot read standard input: {e}"))?;
+    let text =
+        String::from_utf8(bytes).map_err(|_| "error: input is not valid UTF-8".to_owned())?;
+    parse_text(&text)
 }
 
 fn run_median(args: &[String]) -> Result<String, String> {
@@ -50,10 +84,15 @@ fn run_median(args: &[String]) -> Result<String, String> {
 }
 
 fn run_stats(args: &[String]) -> Result<String, String> {
-    let values = args
-        .iter()
-        .map(|a| parse_number(a))
-        .collect::<Result<Vec<i32>, _>>()?;
+    // Arguments and standard input are never mixed: standard input is read
+    // only when no argument is given.
+    let values = if args.is_empty() {
+        read_stdin_numbers()?
+    } else {
+        args.iter()
+            .map(|a| parse_number(a))
+            .collect::<Result<Vec<i32>, _>>()?
+    };
     let empty = || "error: stats needs at least one number".to_owned();
     let (min, max) = peppec_test::min_max(&values).ok_or_else(empty)?;
     let range = peppec_test::range(&values).ok_or_else(empty)?;
