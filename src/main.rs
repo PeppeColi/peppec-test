@@ -12,11 +12,18 @@ struct Command {
 }
 
 /// Every command the program knows. Adding a command means adding an entry here.
-const COMMANDS: &[Command] = &[Command {
-    name: "median",
-    summary: "print the median of the numbers",
-    run: run_median,
-}];
+const COMMANDS: &[Command] = &[
+    Command {
+        name: "median",
+        summary: "print the median of the numbers",
+        run: run_median,
+    },
+    Command {
+        name: "stats",
+        summary: "print count, min, max, range, average and median",
+        run: run_stats,
+    },
+];
 
 /// Parses one command line argument as a 32-bit signed integer.
 ///
@@ -40,6 +47,22 @@ fn run_median(args: &[String]) -> Result<String, String> {
     peppec_test::median(&values)
         .map(|result| result.to_string())
         .ok_or_else(|| "error: median needs at least one number".to_owned())
+}
+
+fn run_stats(args: &[String]) -> Result<String, String> {
+    let values = args
+        .iter()
+        .map(|a| parse_number(a))
+        .collect::<Result<Vec<i32>, _>>()?;
+    let empty = || "error: stats needs at least one number".to_owned();
+    let (min, max) = peppec_test::min_max(&values).ok_or_else(empty)?;
+    let range = peppec_test::range(&values).ok_or_else(empty)?;
+    let median = peppec_test::median(&values).ok_or_else(empty)?;
+    Ok(format!(
+        "count: {}\nmin: {min}\nmax: {max}\nrange: {range}\naverage: {}\nmedian: {median}",
+        values.len(),
+        peppec_test::average(&values),
+    ))
 }
 
 fn command_names() -> String {
