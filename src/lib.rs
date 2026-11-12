@@ -1,3 +1,5 @@
+pub mod range_stats;
+
 /// Returns the sum of `a` and `b`, widened to `i64` so it cannot overflow.
 pub fn sum(a: i32, b: i32) -> i64 {
     i64::from(a) + i64::from(b)
