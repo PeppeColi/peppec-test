@@ -89,3 +89,40 @@ fn median_reports_only_first_invalid_value() {
 fn median_without_numbers() {
     check_error(&["median"], "error: median needs at least one number");
 }
+
+fn run(args: &[&str]) -> std::process::Output {
+    Command::new(env!("CARGO_BIN_EXE_peppec-test"))
+        .args(args)
+        .output()
+        .unwrap()
+}
+
+#[test]
+fn unknown_command() {
+    let out = run(&["avg", "1", "2"]);
+    assert!(out.stdout.is_empty());
+    let err = String::from_utf8(out.stderr).unwrap();
+    assert_eq!(err.lines().count(), 1);
+    assert!(err.starts_with("error: unknown command 'avg'"));
+    assert!(err.contains("median"));
+    assert_eq!(out.status.code(), Some(2));
+}
+
+#[test]
+fn no_arguments_prints_usage_to_error_stream() {
+    let out = run(&[]);
+    assert!(out.stdout.is_empty());
+    let err = String::from_utf8(out.stderr).unwrap();
+    assert!(err.contains("usage: peppec-test <command> [numbers...]"));
+    assert_eq!(out.status.code(), Some(2));
+}
+
+#[test]
+fn help_prints_usage_to_output_stream() {
+    let out = run(&["--help"]);
+    let stdout = String::from_utf8(out.stdout).unwrap();
+    assert!(stdout.contains("usage: peppec-test <command> [numbers...]"));
+    assert!(stdout.contains("median"));
+    assert!(out.stderr.is_empty());
+    assert_eq!(out.status.code(), Some(0));
+}
