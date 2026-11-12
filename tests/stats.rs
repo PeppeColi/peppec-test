@@ -245,3 +245,64 @@ fn option_errors() {
     fails(&["--help"], "error: unknown option '--help'");
     fails(&["--foo", "abc"], "error: unknown option '--foo'");
 }
+
+const JSON_ALL: &str = r#"{"count":3,"min":1,"max":3,"range":2,"average":2,"median":2}"#;
+
+#[test]
+fn json_prints_one_object_with_six_keys() {
+    assert_eq!(ok(&["--json", "3", "1", "2"]), format!("{JSON_ALL}\n"));
+}
+
+#[test]
+fn json_option_may_come_after_numbers() {
+    assert_eq!(ok(&["3", "1", "2", "--json"]), format!("{JSON_ALL}\n"));
+}
+
+#[test]
+fn json_given_twice_changes_nothing() {
+    assert_eq!(
+        ok(&["--json", "--json", "3", "1", "2"]),
+        format!("{JSON_ALL}\n")
+    );
+}
+
+#[test]
+fn json_with_only_writes_null_for_other_statistics() {
+    assert_eq!(
+        ok(&["--json", "--only", "min,median", "4", "1", "3", "2"]),
+        "{\"count\":null,\"min\":1,\"max\":null,\"range\":null,\"average\":null,\"median\":2.5}\n"
+    );
+}
+
+#[test]
+fn json_extremes_of_32_bit_range() {
+    assert_eq!(
+        ok(&["--json", "-2147483648", "2147483647"]),
+        "{\"count\":2,\"min\":-2147483648,\"max\":2147483647,\"range\":4294967295,\"average\":0,\"median\":-0.5}\n"
+    );
+}
+
+#[test]
+fn json_reads_standard_input_when_no_number_is_given() {
+    let (out, err, code) = run_with_input(&["--json"], b"3\n1\n2\n");
+    assert_eq!(out, format!("{JSON_ALL}\n"));
+    assert!(err.is_empty());
+    assert_eq!(code, Some(0));
+}
+
+#[test]
+fn json_stdin_invalid_number_is_plain_error() {
+    fails_input(
+        &["--json"],
+        b"1\nabc\n",
+        "error: line 2: 'abc' is not a valid number",
+    );
+}
+
+#[test]
+fn json_unknown_statistic_is_plain_error() {
+    fails(
+        &["--json", "--only", "avg", "1"],
+        "error: unknown statistic 'avg'; available statistics: count, min, max, range, average, median",
+    );
+}
