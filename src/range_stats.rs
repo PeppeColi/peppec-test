@@ -55,6 +55,17 @@ pub fn rs_min_gap(values: &[i64]) -> Option<i64> {
         .min()
 }
 
+/// Returns how many values of `values` lie within the range of `bounds`, from
+/// the smallest to the largest value of `bounds`, both included.
+///
+/// Returns `None` if `bounds` is empty. An empty `values` yields `0`.
+pub fn rs_count_in_range(values: &[i64], bounds: &[i64]) -> Option<i64> {
+    let low = bounds.iter().copied().min()?;
+    let high = bounds.iter().copied().max()?;
+    let count = values.iter().filter(|&&v| low <= v && v <= high).count();
+    i64::try_from(count).ok()
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -213,5 +224,59 @@ mod tests {
         assert_eq!(rs_min_gap(&[i64::MIN, 0, i64::MAX]), Some(i64::MAX));
         // MIN -> -1 fits (2^63 - 1); -1 -> MAX overflows and is skipped.
         assert_eq!(rs_min_gap(&[i64::MIN, -1, i64::MAX]), Some(i64::MAX));
+    }
+
+    #[test]
+    fn rs_count_in_range_with_empty_bounds_is_none() {
+        assert_eq!(rs_count_in_range(&[1, 2, 3], &[]), None);
+        assert_eq!(rs_count_in_range(&[], &[]), None);
+    }
+
+    #[test]
+    fn rs_count_in_range_of_empty_values_is_zero() {
+        assert_eq!(rs_count_in_range(&[], &[1, 5]), Some(0));
+    }
+
+    #[test]
+    fn rs_count_in_range_counts_values_inside() {
+        // Bounds 2..=8
+        assert_eq!(rs_count_in_range(&[3, 4, 7], &[2, 8]), Some(3));
+        assert_eq!(rs_count_in_range(&[5], &[2, 8]), Some(1));
+    }
+
+    #[test]
+    fn rs_count_in_range_excludes_values_outside() {
+        assert_eq!(rs_count_in_range(&[1, 9, -4, 100], &[2, 8]), Some(0));
+        assert_eq!(rs_count_in_range(&[1, 3, 9], &[2, 8]), Some(1));
+    }
+
+    #[test]
+    fn rs_count_in_range_includes_bounds() {
+        assert_eq!(rs_count_in_range(&[2, 8], &[2, 8]), Some(2));
+        assert_eq!(rs_count_in_range(&[2, 1, 8, 9], &[8, 2]), Some(2));
+    }
+
+    #[test]
+    fn rs_count_in_range_uses_smallest_and_largest_of_bounds() {
+        // The bounds are 0 and 10, whatever their order.
+        assert_eq!(
+            rs_count_in_range(&[0, 5, 10, 11, -1], &[7, 0, 10, 3]),
+            Some(3)
+        );
+    }
+
+    #[test]
+    fn rs_count_in_range_with_single_bound_matches_only_that_value() {
+        assert_eq!(rs_count_in_range(&[4, 5, 4], &[4]), Some(2));
+        assert_eq!(rs_count_in_range(&[4, 5, 6], &[7]), Some(0));
+    }
+
+    #[test]
+    fn rs_count_in_range_at_extremes() {
+        assert_eq!(
+            rs_count_in_range(&[i64::MIN, 0, i64::MAX], &[i64::MIN, i64::MAX]),
+            Some(3)
+        );
+        assert_eq!(rs_count_in_range(&[i64::MAX], &[i64::MIN, 0]), Some(0));
     }
 }
