@@ -131,3 +131,5 @@ assert_eq!(sum_of_squares(&[1, -2, 3]), 14);
 assert_eq!(sum_of_squares(&[i32::MIN, i32::MIN]), i64::MAX);
 assert_eq!(sum_of_squares(&[]), 0);
 ```
+
+Agent pull requests are merged into `dev`; `dev` is brought to `main` with a merge commit.
