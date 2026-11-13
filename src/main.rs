@@ -343,5 +343,3 @@ mod tests {
         assert_eq!(run_shout(&[]), Ok(String::new()));
     }
 }
-
-fn   badly_formatted ( ) { }
