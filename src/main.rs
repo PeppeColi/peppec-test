@@ -29,6 +29,11 @@ const COMMANDS: &[Command] = &[
         summary: "print hello",
         run: run_hello,
     },
+    Command {
+        name: "bye",
+        summary: "print bye",
+        run: run_bye,
+    },
 ];
 
 /// Parses one command line argument as a 32-bit signed integer.
@@ -91,6 +96,11 @@ fn run_median(args: &[String]) -> Result<String, String> {
 /// Prints `hello`. Any arguments are ignored.
 fn run_hello(_args: &[String]) -> Result<String, String> {
     Ok("hello".to_owned())
+}
+
+/// Prints `bye`. Any arguments are ignored.
+fn run_bye(_args: &[String]) -> Result<String, String> {
+    Ok("bye".to_owned())
 }
 
 /// The statistics of `stats`, in canonical order.

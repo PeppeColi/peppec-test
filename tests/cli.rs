@@ -123,6 +123,11 @@ fn hello_prints_hello() {
 }
 
 #[test]
+fn bye_prints_bye() {
+    check(&["bye"], "bye");
+}
+
+#[test]
 fn help_prints_usage_to_output_stream() {
     let out = run(&["--help"]);
     let stdout = String::from_utf8(out.stdout).unwrap();
