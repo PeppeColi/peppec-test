@@ -11,3 +11,7 @@ preset: rust-v1
 #   cargo test --all-features
 # protected_paths:
 #   - Makefile
+
+# p02 test (2026-11-13): S on sonnet, to see the override in the run log. Remove after the test.
+models:
+  s: sonnet
