@@ -93,15 +93,9 @@ fn run_median(args: &[String]) -> Result<String, String> {
         .ok_or_else(|| "error: median needs at least one number".to_owned())
 }
 
-<<<<<<< HEAD
 /// Prints `Hello!`. Any arguments are ignored.
 fn run_hello(_args: &[String]) -> Result<String, String> {
     Ok("Hello!".to_owned())
-=======
-/// Prints `hi`. Any arguments are ignored.
-fn run_hello(_args: &[String]) -> Result<String, String> {
-    Ok("hi".to_owned())
->>>>>>> origin/dev
 }
 
 /// Prints `bye`. Any arguments are ignored.
