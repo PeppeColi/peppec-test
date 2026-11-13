@@ -136,3 +136,10 @@ fn help_prints_usage_to_output_stream() {
     assert!(out.stderr.is_empty());
     assert_eq!(out.status.code(), Some(0));
 }
+
+/// Scenario of spec #124: given the CLI, when I run `shout abc`, then it
+/// prints `ABC`.
+#[test]
+fn spec_124_shout_abc_prints_abc() {
+    check(&["shout", "abc"], "ABC");
+}
