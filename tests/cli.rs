@@ -118,6 +118,11 @@ fn no_arguments_prints_usage_to_error_stream() {
 }
 
 #[test]
+fn hello_prints_hello() {
+    check(&["hello"], "hello");
+}
+
+#[test]
 fn help_prints_usage_to_output_stream() {
     let out = run(&["--help"]);
     let stdout = String::from_utf8(out.stdout).unwrap();
