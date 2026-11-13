@@ -43,6 +43,11 @@ fn median_at_extremes() {
     check(&["median", "-2147483648", "2147483647"], "-0.5");
 }
 
+#[test]
+fn greet_prints_english_greeting() {
+    check(&["greet"], "Hello, world!");
+}
+
 fn check_error(args: &[&str], expected_error: &str) {
     let out = Command::new(env!("CARGO_BIN_EXE_peppec-test"))
         .args(args)

@@ -47,6 +47,13 @@ average: 2
 median: 2
 ```
 
+The `greet` command prints a greeting in English:
+
+```console
+$ peppec-test greet
+Hello, world!
+```
+
 `--only <list>` shows only the statistics named in the list, separated by commas. The
 statistics are still shown in the order above, whatever order the list gives them in:
 
