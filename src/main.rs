@@ -24,6 +24,11 @@ const COMMANDS: &[Command] = &[
         summary: "print count, min, max, range, average and median",
         run: run_stats,
     },
+    Command {
+        name: "sum",
+        summary: "print the sum of the numbers",
+        run: run_sum,
+    },
 ];
 
 /// Parses one command line argument as a 32-bit signed integer.
@@ -81,6 +86,22 @@ fn run_median(args: &[String]) -> Result<String, String> {
     peppec_test::median(&values)
         .map(|result| result.to_string())
         .ok_or_else(|| "error: median needs at least one number".to_owned())
+}
+
+fn run_sum(args: &[String]) -> Result<String, String> {
+    let values = args
+        .iter()
+        .map(|a| parse_number(a))
+        .collect::<Result<Vec<i32>, _>>()?;
+    if values.is_empty() {
+        return Err("error: sum needs at least one number".to_owned());
+    }
+    // Each number fits in an `i32`, and the sum is computed in `i64`, so it
+    // cannot overflow here; only the result must fit in an `i32`.
+    let total: i64 = values.iter().map(|&v| i64::from(v)).sum();
+    i32::try_from(total)
+        .map(|sum| sum.to_string())
+        .map_err(|_| "error: the sum is out of range for a 32-bit integer".to_owned())
 }
 
 /// The statistics of `stats`, in canonical order.

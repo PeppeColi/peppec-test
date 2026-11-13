@@ -126,3 +126,34 @@ fn help_prints_usage_to_output_stream() {
     assert!(out.stderr.is_empty());
     assert_eq!(out.status.code(), Some(0));
 }
+
+#[test]
+fn sum_of_values() {
+    check(&["sum", "1", "2", "3"], "6");
+}
+
+#[test]
+fn sum_negative_and_plus_signed_values() {
+    check(&["sum", "-5", "+2", "1"], "-2");
+}
+
+#[test]
+fn sum_without_numbers() {
+    check_error(&["sum"], "error: sum needs at least one number");
+}
+
+#[test]
+fn sum_above_32_bit_range() {
+    check_error(
+        &["sum", "2147483647", "1"],
+        "error: the sum is out of range for a 32-bit integer",
+    );
+}
+
+#[test]
+fn sum_below_32_bit_range() {
+    check_error(
+        &["sum", "-2147483648", "-1"],
+        "error: the sum is out of range for a 32-bit integer",
+    );
+}
