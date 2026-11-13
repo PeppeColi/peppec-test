@@ -34,6 +34,11 @@ const COMMANDS: &[Command] = &[
         summary: "print bye",
         run: run_bye,
     },
+    Command {
+        name: "shout",
+        summary: "print the arguments in uppercase, joined by spaces",
+        run: run_shout,
+    },
 ];
 
 /// Parses one command line argument as a 32-bit signed integer.
@@ -101,6 +106,13 @@ fn run_hello(_args: &[String]) -> Result<String, String> {
 /// Prints `bye`. Any arguments are ignored.
 fn run_bye(_args: &[String]) -> Result<String, String> {
     Ok("bye".to_owned())
+}
+
+/// Prints the arguments in uppercase, joined by single spaces. With no
+/// arguments it prints an empty line.
+fn run_shout(args: &[String]) -> Result<String, String> {
+    let words: Vec<String> = args.iter().map(|a| a.to_uppercase()).collect();
+    Ok(words.join(" "))
 }
 
 /// The statistics of `stats`, in canonical order.
@@ -260,5 +272,37 @@ fn main() -> ExitCode {
                 }
             }
         }
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    fn args(words: &[&str]) -> Vec<String> {
+        words.iter().map(|w| (*w).to_owned()).collect()
+    }
+
+    #[test]
+    fn shout_prints_the_argument_in_uppercase() {
+        assert_eq!(run_shout(&args(&["abc"])), Ok("ABC".to_owned()));
+    }
+
+    #[test]
+    fn shout_joins_the_arguments_with_spaces() {
+        assert_eq!(
+            run_shout(&args(&["hello", "big", "world"])),
+            Ok("HELLO BIG WORLD".to_owned())
+        );
+    }
+
+    #[test]
+    fn shout_keeps_characters_that_have_no_uppercase_form() {
+        assert_eq!(run_shout(&args(&["a1-b_2!"])), Ok("A1-B_2!".to_owned()));
+    }
+
+    #[test]
+    fn shout_without_arguments_prints_an_empty_line() {
+        assert_eq!(run_shout(&[]), Ok(String::new()));
     }
 }
