@@ -24,6 +24,11 @@ const COMMANDS: &[Command] = &[
         summary: "print count, min, max, range, average and median",
         run: run_stats,
     },
+    Command {
+        name: "pong",
+        summary: "print pong",
+        run: run_pong,
+    },
 ];
 
 /// Parses one command line argument as a 32-bit signed integer.
@@ -179,6 +184,11 @@ fn run_stats(args: &[String]) -> Result<String, String> {
         .map(|((name, value), _)| format!("{name}: {value}"))
         .collect();
     Ok(lines.join("\n"))
+}
+
+/// Prints `pong`. Any arguments are ignored.
+fn run_pong(_args: &[String]) -> Result<String, String> {
+    Ok("pong".to_owned())
 }
 
 fn command_names() -> String {
