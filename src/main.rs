@@ -15,6 +15,11 @@ struct Command {
 /// Every command the program knows. Adding a command means adding an entry here.
 const COMMANDS: &[Command] = &[
     Command {
+        name: "ping",
+        summary: "print pong, to check that the program runs",
+        run: run_ping,
+    },
+    Command {
         name: "median",
         summary: "print the median of the numbers",
         run: run_median,
@@ -70,6 +75,10 @@ fn read_stdin_numbers() -> Result<Vec<i32>, String> {
     let text =
         String::from_utf8(bytes).map_err(|_| "error: input is not valid UTF-8".to_owned())?;
     parse_text(&text)
+}
+
+fn run_ping(_args: &[String]) -> Result<String, String> {
+    Ok("pong".to_owned())
 }
 
 fn run_median(args: &[String]) -> Result<String, String> {
