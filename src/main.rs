@@ -20,6 +20,11 @@ const COMMANDS: &[Command] = &[
         run: run_ping,
     },
     Command {
+        name: "pong",
+        summary: "print ping, to check that the program runs",
+        run: run_pong,
+    },
+    Command {
         name: "median",
         summary: "print the median of the numbers",
         run: run_median,
@@ -79,6 +84,10 @@ fn read_stdin_numbers() -> Result<Vec<i32>, String> {
 
 fn run_ping(_args: &[String]) -> Result<String, String> {
     Ok("pong".to_owned())
+}
+
+fn run_pong(_args: &[String]) -> Result<String, String> {
+    Ok("ping".to_owned())
 }
 
 fn run_median(args: &[String]) -> Result<String, String> {

@@ -19,6 +19,11 @@ fn ping_prints_pong() {
 }
 
 #[test]
+fn pong_prints_ping() {
+    check(&["pong"], "ping");
+}
+
+#[test]
 fn median_odd_count() {
     check(&["median", "3", "1", "2"], "2");
 }
