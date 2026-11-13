@@ -119,7 +119,11 @@ fn no_arguments_prints_usage_to_error_stream() {
 
 #[test]
 fn hello_prints_hello() {
+<<<<<<< HEAD
     check(&["hello"], "Hello!");
+=======
+    check(&["hello"], "hi");
+>>>>>>> origin/dev
 }
 
 #[test]
