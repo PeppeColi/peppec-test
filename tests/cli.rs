@@ -143,3 +143,13 @@ fn help_prints_usage_to_output_stream() {
 fn spec_124_shout_abc_prints_abc() {
     check(&["shout", "abc"], "ABC");
 }
+
+#[test]
+fn divide_7_by_2_prints_3() {
+    check(&["divide", "7", "2"], "3");
+}
+
+#[test]
+fn divide_9_by_3_prints_3() {
+    check(&["divide", "9", "3"], "3");
+}
