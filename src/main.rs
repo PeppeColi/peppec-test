@@ -39,6 +39,11 @@ const COMMANDS: &[Command] = &[
         summary: "print the arguments in uppercase, joined by spaces",
         run: run_shout,
     },
+    Command {
+        name: "divide",
+        summary: "print A divided by B, as an integer division",
+        run: run_divide,
+    },
 ];
 
 /// Parses one command line argument as a 32-bit signed integer.
@@ -113,6 +118,17 @@ fn run_bye(_args: &[String]) -> Result<String, String> {
 fn run_shout(args: &[String]) -> Result<String, String> {
     let words: Vec<String> = args.iter().map(|a| a.to_uppercase()).collect();
     Ok(words.join(" "))
+}
+
+/// Prints the integer division of the two numbers, truncated toward zero.
+fn run_divide(args: &[String]) -> Result<String, String> {
+    let [a, b] = args else {
+        return Err("error: divide needs exactly two numbers".to_owned());
+    };
+    let (a, b) = (parse_number(a)?, parse_number(b)?);
+    a.checked_div(b)
+        .map(|result| result.to_string())
+        .ok_or_else(|| "error: cannot divide".to_owned())
 }
 
 /// The statistics of `stats`, in canonical order.
