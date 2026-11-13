@@ -98,6 +98,11 @@ fn run(args: &[&str]) -> std::process::Output {
 }
 
 #[test]
+fn ping_prints_pong() {
+    check(&["ping"], "pong");
+}
+
+#[test]
 fn unknown_command() {
     let out = run(&["avg", "1", "2"]);
     assert!(out.stdout.is_empty());

@@ -24,6 +24,11 @@ const COMMANDS: &[Command] = &[
         summary: "print count, min, max, range, average and median",
         run: run_stats,
     },
+    Command {
+        name: "ping",
+        summary: "print pong",
+        run: run_ping,
+    },
 ];
 
 /// Parses one command line argument as a 32-bit signed integer.
@@ -81,6 +86,11 @@ fn run_median(args: &[String]) -> Result<String, String> {
     peppec_test::median(&values)
         .map(|result| result.to_string())
         .ok_or_else(|| "error: median needs at least one number".to_owned())
+}
+
+/// `ping` ignores its arguments and always answers `pong`.
+fn run_ping(_args: &[String]) -> Result<String, String> {
+    Ok("pong".to_owned())
 }
 
 /// The statistics of `stats`, in canonical order.
