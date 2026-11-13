@@ -44,6 +44,11 @@ const COMMANDS: &[Command] = &[
         summary: "print A divided by B, as an integer division",
         run: run_divide,
     },
+    Command {
+        name: "percent",
+        summary: "print A * 100 / B, computed on 8-bit unsigned integers",
+        run: run_percent,
+    },
 ];
 
 /// Parses one command line argument as a 32-bit signed integer.
@@ -129,6 +134,22 @@ fn run_divide(args: &[String]) -> Result<String, String> {
     a.checked_div(b)
         .map(|result| result.to_string())
         .ok_or_else(|| "error: cannot divide".to_owned())
+}
+
+/// Prints `A * 100 / B`, with A and B parsed and computed as `u8`.
+fn run_percent(args: &[String]) -> Result<String, String> {
+    let [a, b] = args else {
+        return Err("error: percent needs exactly two numbers".to_owned());
+    };
+    let parse = |text: &String| {
+        text.parse::<u8>()
+            .map_err(|_| format!("error: '{text}' is not a valid 8-bit unsigned number"))
+    };
+    let (a, b) = (parse(a)?, parse(b)?);
+    a.checked_mul(100)
+        .and_then(|product| product.checked_div(b))
+        .map(|result| result.to_string())
+        .ok_or_else(|| "error: cannot compute percent".to_owned())
 }
 
 /// The statistics of `stats`, in canonical order.

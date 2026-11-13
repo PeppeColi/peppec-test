@@ -153,3 +153,13 @@ fn divide_7_by_2_prints_3() {
 fn divide_9_by_3_prints_3() {
     check(&["divide", "9", "3"], "3");
 }
+
+#[test]
+fn percent_1_of_4_prints_25() {
+    check(&["percent", "1", "4"], "25");
+}
+
+#[test]
+fn percent_1_of_2_prints_50() {
+    check(&["percent", "1", "2"], "50");
+}
