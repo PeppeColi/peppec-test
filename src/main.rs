@@ -1,3 +1,4 @@
+use std::collections::BTreeMap;
 use std::env;
 use std::io::{self, Read};
 use std::process::ExitCode;
@@ -23,6 +24,11 @@ const COMMANDS: &[Command] = &[
         name: "stats",
         summary: "print count, min, max, range, average and median",
         run: run_stats,
+    },
+    Command {
+        name: "mode",
+        summary: "print the most frequent number (the smallest on a tie)",
+        run: run_mode,
     },
 ];
 
@@ -81,6 +87,36 @@ fn run_median(args: &[String]) -> Result<String, String> {
     peppec_test::median(&values)
         .map(|result| result.to_string())
         .ok_or_else(|| "error: median needs at least one number".to_owned())
+}
+
+/// Returns the most frequent value of `values`, or `None` if it is empty.
+///
+/// On a tie, the smallest of the most frequent values is returned.
+fn most_frequent(values: &[i32]) -> Option<i32> {
+    let mut counts: BTreeMap<i32, usize> = BTreeMap::new();
+    for &value in values {
+        *counts.entry(value).or_insert(0) += 1;
+    }
+    // The map is visited in ascending order, so a value replaces the best one
+    // only when it is strictly more frequent.
+    let mut best: Option<(i32, usize)> = None;
+    for (&value, &count) in &counts {
+        if best.is_none_or(|(_, best_count)| count > best_count) {
+            best = Some((value, count));
+        }
+    }
+    best.map(|(value, _)| value)
+}
+
+fn run_mode(args: &[String]) -> Result<String, String> {
+    // `collect` stops at the first invalid value, so only that one is reported.
+    let values = args
+        .iter()
+        .map(|a| parse_number(a))
+        .collect::<Result<Vec<i32>, _>>()?;
+    most_frequent(&values)
+        .map(|result| result.to_string())
+        .ok_or_else(|| "error: mode needs at least one number".to_owned())
 }
 
 /// The statistics of `stats`, in canonical order.
@@ -240,5 +276,24 @@ fn main() -> ExitCode {
                 }
             }
         }
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::run_mode;
+
+    fn args(words: &[&str]) -> Vec<String> {
+        words.iter().map(|w| (*w).to_owned()).collect()
+    }
+
+    #[test]
+    fn mode_prints_the_most_frequent_number() {
+        assert_eq!(run_mode(&args(&["1", "2", "2", "3"])), Ok("2".to_owned()));
+    }
+
+    #[test]
+    fn mode_breaks_a_tie_with_the_smallest_most_frequent_number() {
+        assert_eq!(run_mode(&args(&["3", "1", "3", "1"])), Ok("1".to_owned()));
     }
 }
