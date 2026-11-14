@@ -24,6 +24,11 @@ const COMMANDS: &[Command] = &[
         summary: "print count, min, max, range, average and median",
         run: run_stats,
     },
+    Command {
+        name: "sum",
+        summary: "print the sum of the numbers",
+        run: run_sum,
+    },
 ];
 
 /// Parses one command line argument as a 32-bit signed integer.
@@ -81,6 +86,16 @@ fn run_median(args: &[String]) -> Result<String, String> {
     peppec_test::median(&values)
         .map(|result| result.to_string())
         .ok_or_else(|| "error: median needs at least one number".to_owned())
+}
+
+fn run_sum(args: &[String]) -> Result<String, String> {
+    let values = args
+        .iter()
+        .map(|a| parse_number(a))
+        .collect::<Result<Vec<i32>, _>>()?;
+    // Each number is widened to `i64` before adding, so the sum cannot overflow.
+    let total: i64 = values.iter().map(|&v| i64::from(v)).sum();
+    Ok(total.to_string())
 }
 
 /// The statistics of `stats`, in canonical order.
@@ -240,5 +255,24 @@ fn main() -> ExitCode {
                 }
             }
         }
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    fn args(words: &[&str]) -> Vec<String> {
+        words.iter().map(|w| (*w).to_owned()).collect()
+    }
+
+    #[test]
+    fn sum_prints_the_sum_of_the_numbers() {
+        assert_eq!(run_sum(&args(&["1", "2", "3"])), Ok("6".to_owned()));
+    }
+
+    #[test]
+    fn sum_with_no_numbers_prints_zero() {
+        assert_eq!(run_sum(&args(&[])), Ok("0".to_owned()));
     }
 }
