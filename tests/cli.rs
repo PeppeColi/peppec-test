@@ -126,3 +126,8 @@ fn help_prints_usage_to_output_stream() {
     assert!(out.stderr.is_empty());
     assert_eq!(out.status.code(), Some(0));
 }
+
+#[test]
+fn spec_143_mode_prints_most_frequent() {
+    check(&["mode", "1", "2", "2", "3"], "2");
+}
